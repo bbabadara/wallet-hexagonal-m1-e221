@@ -1,0 +1,61 @@
+EXERCICES PRATIQUES — WALLET HEXAGONAL
+3 niveaux de difficulté, tous obligatoires
+Module
+5.1 – Architecture par couches, hexagonale, DDD et API Design
+Fil rouge
+API Wallet (Portefeuille Virtuel) — reprise du code hexagonal de la Séance
+Principe
+Les 3 niveaux sont obligatoires, à traiter dans l'ordre
+
+Principe de la journée
+Les 3 niveaux sont obligatoires et à traiter dans l'ordre : Niveau 1 (fondations), puis Niveau 2 (intermédiaire), puis Niveau 3 (avancé). Le code de départ est celui du dépôt GitHub déjà partagé.
+NIVEAU 1 — FONDATIONS (OBLIGATOIRE)
+Objectif : consolider la maîtrise du pattern Port/Adapter et de la protection des invariants sur une fonctionnalité neuve, pas encore vue en Séance.
+Étape 1 — Débiter un wallet, avec invariant
+Consigne : ajoutez une méthode `debiter(BigDecimal amount)` sur l'entité `Wallet`. Règle métier à protéger : le solde ne peut jamais devenir négatif (découvert interdit). En cas de tentative de débit supérieur au solde disponible, levez une exception métier dédiée (pas une exception générique).
+Critères de validation
+☐ La méthode debiter() vit dans l'entité Wallet, pas dans le Service.
+☐ Une exception métier explicite existe (ex: SoldeInsuffisantException), avec un nom qui parle.
+☐ Impossible d'obtenir un solde négatif, quel que soit le chemin emprunté dans le code.
+Étape 2 — Historique des transactions
+Consigne : chaque credit()/debit() réussi doit être enregistré comme une transaction (montant, type, date). Créez le Port et l'Adapter nécessaires pour persister cet historique, sur le même modèle que WalletRepository.
+Critères de validation
+☐ Un nouveau Port (ex: TransactionHistoryRepository) est défini côté domaine.
+☐ Une entité Transaction existe avec une identité propre (Entity, pas Value Object) et un horodatage.
+☐ L'Adapter JPA correspondant est écrit et branché dans le WalletService.
+Étape 3 — Tests du domaine, sans base de données
+Consigne : écrivez au moins 3 tests unitaires couvrant credit() en succès, debit() en succès, et debit() refusé pour solde insuffisant — sans démarrer aucune base de données (Stub/Fake ou Mockito, au choix du groupe).
+Critères de validation
+☐ Les 3 tests s'exécutent sans dépendance à une base de données réelle.
+☐ Le test de debit() refusé vérifie bien qu'une exception est levée ET que le solde n'a pas changé.
+☐ Les tests passent (vert) avant de passer au Niveau 2.
+NIVEAU 2 — INTERMÉDIAIRE (OBLIGATOIRE)
+Choisissez au moins une option ci-dessous et traitez-la intégralement. Un groupe qui a le temps peut en traiter deux.
+Option A — API REST propre
+Exposez credit/débit via des endpoints REST avec DTOs (pas d'entité de domaine exposée directement). Gérez les erreurs métier via @ControllerAdvice : 404 si wallet introuvable, 400 si montant invalide, 409 ou 422 si solde insuffisant.
+Critères de validation
+☐ Aucune classe du domaine n'apparaît dans les signatures du Controller (uniquement des DTOs).
+☐ Chaque exception métier est traduite en un code HTTP cohérent et documenté.
+Option B — Notification découplée par événement
+Publiez un événement de domaine (ApplicationEventPublisher, vu en Module 1.1) à chaque transaction réussie. Créez un Port NotificationSender et un Adapter simple (log console ou email simulé) écouté via @EventListener — le WalletService ne doit rien savoir de l'existence de la notification.
+Critères de validation
+☐ WalletService ne référence ni NotificationSender ni le mécanisme d'envoi : il publie seulement un événement.
+☐ L'écouteur (@EventListener) est dans une classe séparée, dans un package distinct du domaine.
+Option C — Deuxième implémentation d'un Port
+Ajoutez une seconde implémentation de WalletRepository (ex: InMemoryWalletRepository), sélectionnable via un profil Spring (@Profile), pour rendre concret le bénéfice de substituabilité du Port.
+Critères de validation
+☐ Les deux implémentations respectent exactement la même interface, sans méthode ajoutée d'un côté ou de l'autre.
+☐ Un changement de profil suffit à faire tourner l'application sur l'une ou l'autre, sans toucher au domaine.
+NIVEAU 3 — AVANCÉ (OBLIGATOIRE)
+Choisissez au moins une option ci-dessous et traitez-la intégralement.
+Option D — Value Object Money
+Remplacez le BigDecimal brut par un Value Object Money (montant + devise). Invariant à protéger : impossible de créditer ou débiter dans une devise différente de celle du wallet sans conversion explicite.
+Option E — Anti-corruption layer (inspiré de SunuCredit)
+Créez un Port FraudScoringService qui bloque toute transaction au-delà d'un seuil sans passer par un score de fraude simulé. L'Adapter doit isoler le domaine du format de réponse d'une API tierce fictive (JSON avec des champs différents des vôtres).
+Option F — Test de contrat
+Écrivez un test paramétré qui s'exécute contre toutes les implémentations connues d'un même Port (InMemory + JPA), pour garantir qu'elles ont exactement le même comportement observable.
+Option G — Mini-CQRS par événement
+Un @EventListener met à jour une « vue » de lecture consolidée (ex: solde total, nombre de transactions du jour) séparée du chemin d'écriture — première approche du découplage lecture/écriture, sujet du Module 5.2.
+Livrables attendus
+Un commit/push final, sur une branche identifiable par groupe.
+Un court README (5 lignes) indiquant le niveau atteint et les options choisies.
