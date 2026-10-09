@@ -1,9 +1,11 @@
-# Wallet Hexagonal — API Portefeuille Virtuel
+# Wallet Hexagonal - API Portefeuille Virtuel
 
-Niveau 1 (fondations) : entité `Wallet` avec invariant de solde (`SoldeInsuffisantException`), historique des transactions (`TransactionHistoryRepository` Port + adapter JPA) et tests du domaine sans base de données.
+Niveau 1 (fondations) : Entité Wallet avec debit() et invariant (solde >= 0, SoldeInsuffisantException), historique des transactions via TransactionHistoryRepository (port + adapter JPA), tests du domaine sans base de données (WalletTest).
 
-Niveau 2 : Option A — API REST propre (DTOs uniquement dans le controller, `@ControllerAdvice` : 404 wallet introuvable, 400 montant invalide, 409 solde insuffisant, 422 devise incompatible).
+Niveau 2 (intermédiaire) : Option A - API REST propre avec DTOs uniquement dans le controller, gestion d'erreurs avec @ControllerAdvice (404 WalletNotFound, 400 MontantInvalide, 409 SoldeInsuffisant, 422 DeviseIncompatible).
 
-Niveau 3 : Option D — Value Object `Money` (montant + devise), une devise différente de celle du wallet est refusée sans conversion explicite.
+Niveau 3 (avancé) : Option D - Value Object Money (montant + devise), refus explicite si devise différente sans conversion.
 
-Branche : `feature/wallet` — Lancement : `./mvnw spring-boot:run` (endpoints `POST /wallets`, `GET /wallets/{id}`, `POST /wallets/{id}/credits`, `POST /wallets/{id}/debits`) — Tests : `./mvnw test`.
+Branche principale : main | Branches : feature/niveau-1, feature/niveau-2, feature/niveau-3
+Démarrage : ./mvnw spring-boot:run
+Tests : ./mvnw test -Dtest=WalletTest
