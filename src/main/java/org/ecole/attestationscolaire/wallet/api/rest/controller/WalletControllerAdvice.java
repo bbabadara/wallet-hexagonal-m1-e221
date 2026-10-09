@@ -1,5 +1,6 @@
 package org.ecole.attestationscolaire.wallet.api.rest.controller;
 
+import org.ecole.attestationscolaire.wallet.domain.exception.DeviseIncompatibleException;
 import org.ecole.attestationscolaire.wallet.domain.exception.MontantInvalideException;
 import org.ecole.attestationscolaire.wallet.domain.exception.SoldeInsuffisantException;
 import org.ecole.attestationscolaire.wallet.domain.exception.WalletNotFoundException;
@@ -26,5 +27,11 @@ public class WalletControllerAdvice {
     public ResponseEntity<ErrorResponse> handleSoldeInsuffisant(SoldeInsuffisantException e) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(new ErrorResponse("SOLDE_INSUFFISANT", e.getMessage()));
+    }
+
+    @ExceptionHandler(DeviseIncompatibleException.class)
+    public ResponseEntity<ErrorResponse> handleDeviseIncompatible(DeviseIncompatibleException e) {
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                .body(new ErrorResponse("DEVISE_INCOMPATIBLE", e.getMessage()));
     }
 }
