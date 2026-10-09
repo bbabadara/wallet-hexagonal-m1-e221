@@ -4,10 +4,8 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class AttestationScolaireApplication {
-
+public class WalletApplication {
     public static void main(String[] args) {
-        SpringApplication.run(AttestationScolaireApplication.class, args);
+        SpringApplication.run(WalletApplication.class, args);
     }
-
 }
